@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { LikeStatus } from '../../posts/api/models/output/post.view.model';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { LikeEntity } from './likes.entity';
 
 
 @Injectable()
 export class LikeHandler {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(LikeEntity) private readonly lRepository: Repository<LikeEntity>,
   ) {
   }

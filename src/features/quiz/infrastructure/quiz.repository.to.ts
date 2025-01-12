@@ -9,6 +9,8 @@ import { UserEntity } from '../../users/domain/user.entity';
 import { AnswerEntity } from '../domain/answer.entity';
 import { CreateQuestionInputModel } from '../api/models/input/create-question.input.model';
 import { UpdatePublishStatusInputModel } from '../api/models/input/update-publish-status.input.model';
+import { UserScoreEntity } from '../domain/user-score.entity';
+import { GenerateStatisticHandler } from '../domain/generate-statistic.handler';
 
 
 @Injectable()
@@ -17,6 +19,8 @@ export class QuizRepositoryTO {
   constructor(
     @InjectRepository(GamePairEntity) private readonly gRepository: Repository<GamePairEntity>,
     @InjectRepository(QuestionEntity) private readonly questionRepository: Repository<QuestionEntity>,
+    @InjectRepository(UserScoreEntity) private readonly userScoreRepository: Repository<UserScoreEntity>,
+    private readonly genStatHandler: GenerateStatisticHandler,
   ) {
   }
 
@@ -79,8 +83,8 @@ export class QuizRepositoryTO {
         { status: GameStatuses.PendingSecondPlayer, secondPlayerProgress: { userId: user.id } },
       ],
       relations: [
-        'firstPlayerProgress.user',
-        'secondPlayerProgress.user',
+        'firstPlayerProgress.user.score',
+        'secondPlayerProgress.user.score',
         'firstPlayerProgress.answers',
         'secondPlayerProgress.answers',
         'questions',
@@ -100,8 +104,8 @@ export class QuizRepositoryTO {
     const findedGame = await this.gRepository.findOne({
       where: { id },
       relations: [
-        'firstPlayerProgress.user',
-        'secondPlayerProgress.user',
+        'firstPlayerProgress.user.score',
+        'secondPlayerProgress.user.score',
         'firstPlayerProgress.answers',
         'secondPlayerProgress.answers',
         'questions',
@@ -165,9 +169,6 @@ export class QuizRepositoryTO {
       newAnswer.answerStatus = AnswerStatuses.Incorrect;
     }
     player.answers.push(newAnswer);
-    // if (findedGame.firstPlayerProgress.userId === user.id) {
-    //   findedGame.firstPlayerProgress = player;
-    // } else findedGame.secondPlayerProgress = player;
 
     let saveAnswer = await this.gRepository.save(findedGame);
     if (saveAnswer.firstPlayerProgress.answers.length === 5 && saveAnswer.secondPlayerProgress.answers.length === 5) {
@@ -198,6 +199,11 @@ export class QuizRepositoryTO {
         findedGame.secondPlayerProgress.score++;
       }
       saveAnswer = await this.gRepository.save(findedGame);
+      const generateStatisticForFirstUser = await this.genStatHandler.generateStatisticForUser(findedGame.firstPlayerProgress.user)
+      const generateStatisticForSecondUser = await this.genStatHandler.generateStatisticForUser(findedGame.secondPlayerProgress.user)
+      Object.assign(saveAnswer.firstPlayerProgress.user.score, generateStatisticForFirstUser);
+      Object.assign(saveAnswer.secondPlayerProgress.user.score, generateStatisticForSecondUser);
+      await this.gRepository.save(saveAnswer)
     }
     if (findedGame.firstPlayerProgress.userId === user.id) {
       return saveAnswer.firstPlayerProgress.answers[saveAnswer.firstPlayerProgress.answers.length - 1].id;

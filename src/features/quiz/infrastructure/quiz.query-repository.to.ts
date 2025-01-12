@@ -133,7 +133,6 @@ export class QuizQueryRepositoryTO {
       .take(generateQuery.pageSize);
     const itemsWithQuery = await items
       .getMany();
-    console.log(itemsWithQuery.length);
     const itemsOutput = itemsWithQuery.map((item) => this.gamePairOutputMap(item));
     const resultQuestions = new PaginationBaseModel<GamePairViewModel>(generateQuery, itemsOutput);
     return resultQuestions;
