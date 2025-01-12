@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "h26_api-quiz",
+  "name": "h27_api-quiz",
   "builds": [
     { "src": "src/main.ts", "use": "@vercel/node" }
   ],
