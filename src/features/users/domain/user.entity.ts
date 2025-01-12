@@ -29,7 +29,6 @@ export class UserEntity {
   likes: LikeEntity[];
 
   @OneToOne(() => UserScoreEntity, (score) => score.user, {cascade: true})
-  @JoinColumn()
   score: UserScoreEntity;
 
 }

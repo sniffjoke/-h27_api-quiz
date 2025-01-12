@@ -28,6 +28,7 @@ export class UserScoreEntity {
   drawsCount: number;
 
   @OneToOne(() => UserEntity, (user) => user.score, {onDelete: 'CASCADE'})
+  @JoinColumn({name: 'userId'})
   user: UserEntity;
 
 }
