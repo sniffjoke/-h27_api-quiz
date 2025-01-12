@@ -2,7 +2,6 @@ import { UserEntity } from '../../users/domain/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GamePairEntity } from './game-pair.entity';
-import { UserScoreEntity } from './user-score.entity';
 
 export class GenerateStatisticHandler {
   constructor(
@@ -10,7 +9,7 @@ export class GenerateStatisticHandler {
   ) {
   }
 
-  async generateStatisticForUser(user: UserEntity): Promise<UserScoreEntity> {
+  async generateStatisticForUser(user: UserEntity) {
     const findedGames = await this.gRepository.find({
       where: [
         { firstPlayerProgress: { userId: user.id } },
@@ -58,8 +57,7 @@ export class GenerateStatisticHandler {
       winsCount: wins,
       lossesCount: loses,
       drawsCount: draws,
-      userId: user.id,
-      user: user
+      userId: user.id
     };
   }
 
