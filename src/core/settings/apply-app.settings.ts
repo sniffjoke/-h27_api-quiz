@@ -11,7 +11,7 @@ export function applyAppSettings(app: INestApplication) {
   app.use(cors({
     // credentials: true,
   }));
-  app.useGlobalFilters(new BadRequestExceptionFilter())
+  // app.useGlobalFilters(new BadRequestExceptionFilter())
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.useGlobalPipes(
     new ValidationPipe({

@@ -31,8 +31,10 @@ export class UsersRepositoryTO {
     const userScore = new UserScoreEntity()
     userScore.userId = newUser.id;
 
+    newUser.score = userScore;
+
     await this.uRepository.manager.save(emailConfirmation);
-    await this.uRepository.manager.save(userScore);
+    await this.uRepository.save(newUser);
     return newUser;
   }
 

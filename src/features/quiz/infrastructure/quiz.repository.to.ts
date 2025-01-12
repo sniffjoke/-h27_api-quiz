@@ -90,6 +90,7 @@ export class QuizRepositoryTO {
         'questions',
       ],
     });
+    console.log(findedGame);
     if (!findedGame) {
       throw new NotFoundException('No game');
     }
@@ -201,9 +202,17 @@ export class QuizRepositoryTO {
       saveAnswer = await this.gRepository.save(findedGame);
       const generateStatisticForFirstUser = await this.genStatHandler.generateStatisticForUser(findedGame.firstPlayerProgress.user)
       const generateStatisticForSecondUser = await this.genStatHandler.generateStatisticForUser(findedGame.secondPlayerProgress.user)
-      Object.assign(saveAnswer.firstPlayerProgress.user.score, generateStatisticForFirstUser);
-      Object.assign(saveAnswer.secondPlayerProgress.user.score, generateStatisticForSecondUser);
-      await this.gRepository.save(saveAnswer)
+      // Object.assign(saveAnswer.firstPlayerProgress.user.score, generateStatisticForFirstUser);
+      // Object.assign(saveAnswer.secondPlayerProgress.user.score, generateStatisticForSecondUser);
+      // console.log('userIdInRepository: ', generateStatisticForFirstUser);
+      findedGame.firstPlayerProgress.user.score.userId = generateStatisticForFirstUser.userId
+      findedGame.firstPlayerProgress.user.score.sumScore = generateStatisticForFirstUser.sumScore
+      findedGame.firstPlayerProgress.user.score.avgScores = generateStatisticForFirstUser.avgScores
+      findedGame.firstPlayerProgress.user.score.gamesCount = generateStatisticForFirstUser.gamesCount
+      findedGame.firstPlayerProgress.user.score.winsCount = generateStatisticForFirstUser.winsCount
+      findedGame.firstPlayerProgress.user.score.lossesCount = generateStatisticForFirstUser.lossesCount
+      findedGame.firstPlayerProgress.user.score.drawsCount = generateStatisticForFirstUser.drawsCount
+      await this.gRepository.save(findedGame)
     }
     if (findedGame.firstPlayerProgress.userId === user.id) {
       return saveAnswer.firstPlayerProgress.answers[saveAnswer.firstPlayerProgress.answers.length - 1].id;
