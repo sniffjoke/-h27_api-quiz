@@ -201,20 +201,21 @@ export class QuizRepositoryTO {
         findedGame.secondPlayerProgress.score++;
       }
       saveAnswer = await this.gRepository.save(findedGame);
-      const generateStatisticForFirstUser = await this.genStatHandler.generateStatisticForUser(findedGame.firstPlayerProgress.user)
-      const generateStatisticForSecondUser = await this.genStatHandler.generateStatisticForUser(findedGame.secondPlayerProgress.user)
-      Object.assign(saveAnswer.firstPlayerProgress.user.score, generateStatisticForFirstUser);
-      Object.assign(saveAnswer.secondPlayerProgress.user.score, generateStatisticForSecondUser);
-      // console.log('userIdInRepository: ', generateStatisticForFirstUser);
-      // findedGame.firstPlayerProgress.user.score.userId = generateStatisticForFirstUser.userId
-      // findedGame.firstPlayerProgress.user.score.sumScore = generateStatisticForFirstUser.sumScore
-      // findedGame.firstPlayerProgress.user.score.avgScores = generateStatisticForFirstUser.avgScores
-      // findedGame.firstPlayerProgress.user.score.gamesCount = generateStatisticForFirstUser.gamesCount
-      // findedGame.firstPlayerProgress.user.score.winsCount = generateStatisticForFirstUser.winsCount
-      // findedGame.firstPlayerProgress.user.score.lossesCount = generateStatisticForFirstUser.lossesCount
-      // findedGame.firstPlayerProgress.user.score.drawsCount = generateStatisticForFirstUser.drawsCount
-      // console.log('1: ', saveScores.firstPlayerProgress.user.score);
-      // console.log('2: ', saveScores.secondPlayerProgress.user.score);
+      const firstUserScore = await this.userScoreRepository.findOne({
+        where: { userId: saveAnswer.firstPlayerProgress.user.id },
+      })
+      const secondUserScore = await this.userScoreRepository.findOne({
+        where: { userId: saveAnswer.secondPlayerProgress.user.id },
+      })
+      if (firstUserScore && secondUserScore) {
+        const generateStatisticForFirstUser = await this.genStatHandler.generateStatisticForUser(saveAnswer.firstPlayerProgress.user)
+        const generateStatisticForSecondUser = await this.genStatHandler.generateStatisticForUser(saveAnswer.secondPlayerProgress.user)
+        Object.assign(firstUserScore, generateStatisticForFirstUser);
+        Object.assign(secondUserScore, generateStatisticForSecondUser);
+        console.log(firstUserScore);
+        await this.userScoreRepository.save(firstUserScore)
+        await this.userScoreRepository.save(secondUserScore)
+      }
     }
     saveScores = await this.gRepository.save(saveAnswer)
 

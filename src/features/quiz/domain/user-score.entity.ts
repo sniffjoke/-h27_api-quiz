@@ -12,7 +12,7 @@ export class UserScoreEntity {
   @Column({default: 0})
   sumScore: number;
 
-  @Column({default: 0})
+  @Column('double precision', {default: 0})
   avgScores: number;
 
   @Column({default: 0})
