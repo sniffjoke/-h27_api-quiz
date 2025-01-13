@@ -213,69 +213,46 @@ export class QuizQueryRepositoryTO {
   //--------------------------------------STATISTIC-------------------------------------------//
   //------------------------------------------------------------------------------------------//
 
-  async getMyStatistics(user: UserEntity) {
-    const findedGames = await this.gRepository.find({
-      where: [
-        { firstPlayerProgress: { userId: user.id } },
-        { secondPlayerProgress: { userId: user.id } },
-      ],
-      relations: [
-        'firstPlayerProgress.user',
-        'secondPlayerProgress.user',
-      ],
+  async getAllStatistic(query: any): Promise<PaginationBaseModel<UserScoreEntity>> {
+    const generateQuery = await this.generateQueryForAllStats(query);
+    // console.log(generateQuery.sort);
+    const sortOptions = generateQuery.sort.map((item) => {
+      const [key, value] = item.split(' ')
+      return {sortKey: key, sortValue: value.toUpperCase()}
     });
-    let sumScore = 0;
-    let wins = 0;
-    let loses = 0;
-    let draws = 0;
-    findedGames.map(game => {
-      if (game.firstPlayerProgress.userId === user.id) {
-        sumScore = sumScore + game.firstPlayerProgress.score;
-      } else if (game.secondPlayerProgress.userId === user.id) {
-        sumScore = sumScore + game.secondPlayerProgress.score;
-      }
-      if (game.firstPlayerProgress.score === game.secondPlayerProgress.score) {
-        draws += 1;
-      }
-      if (game.firstPlayerProgress.userId === user.id &&
-        game.firstPlayerProgress.score > game.secondPlayerProgress.score) {
-        wins += 1;
-      } else if (game.firstPlayerProgress.userId === user.id &&
-        game.firstPlayerProgress.score < game.secondPlayerProgress.score) {
-        loses += 1;
-      }
-      if (game.secondPlayerProgress.userId === user.id &&
-        game.secondPlayerProgress.score > game.firstPlayerProgress.score) {
-        wins += 1;
-      } else if (game.secondPlayerProgress.userId === user.id &&
-        game.secondPlayerProgress.score < game.firstPlayerProgress.score) {
-        loses += 1;
-      }
-    });
-    const gamesCount = findedGames.length;
-    const avgScores = Number((sumScore/gamesCount).toFixed(2));
+    // const getAllStatistics = await this.userScoreRepository.find({
+    //   relations: ['user']
+    // });
+    // console.log(sortOptions);
+    const allStatisticsBuilder = this.userScoreRepository
+      .createQueryBuilder('score')
+      .innerJoinAndSelect('score.user', 'user')
+    sortOptions.map((item) => {
+      return allStatisticsBuilder.addOrderBy(`"${item.sortKey}"`, item.sortValue)
+    })
+    const getAllStatistics = await allStatisticsBuilder.getMany()
+    const allStatisticOutput = getAllStatistics.map(info => this.allStatisticOutputMap(info))
+    const resultQuestions = new PaginationBaseModel<UserScoreEntity>(generateQuery, allStatisticOutput);
+    return resultQuestions
+  }
+
+  private async generateQueryForAllStats(query: any) {
+    const totalCount = this.userScoreRepository
+      .createQueryBuilder('score')
+    const totalCountWithQuery = await totalCount.getCount();
+    const pageSize = query.pageSize ? +query.pageSize : 10;
+    const pagesCount = Math.ceil(totalCountWithQuery / pageSize);
+
     return {
-      sumScore,
-      avgScores,
-      gamesCount,
-      winsCount: wins,
-      lossesCount: loses,
-      drawsCount: draws,
-      userId: user.id,
-      userLogin: user.login
+      totalCount: totalCountWithQuery,
+      pageSize,
+      pagesCount,
+      page: query.pageNumber ? Number(query.pageNumber) : 1,
+      sort: query.sort ? query.sort : [ 'avgScores desc', 'sumScore desc' ],
+      // sortDirection: query.sortDirection ? query.sortDirection : 'desc',
     };
   }
 
-  async getAllStatistic(query: any): Promise<AllStatisticViewModel[]> {
-    const getAllStatistics = await this.userScoreRepository.find({
-      relations: ['user']
-    });
-    const allStatisticOutput = getAllStatistics.map(info => this.allStatisticOutputMap(info))
-    return allStatisticOutput
-    // const allStatisticArray = await Promise.all(users.map(user => this.getMyStatistics(user)))
-    // const allStatisticOutput = allStatisticArray.map(info => this.allStatisticOutputMap(info))
-    // return allStatisticOutput
-  }
 
   allStatisticOutputMap(statisticInfo: UserScoreEntity): AllStatisticViewModel {
     const {
