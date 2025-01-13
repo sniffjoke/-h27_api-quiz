@@ -24,6 +24,10 @@ export class QuizRepositoryTO {
   ) {
   }
 
+  //------------------------------------------------------------------------------------------//
+  //-------------------------------------GAMEPAIRS--------------------------------------------//
+  //------------------------------------------------------------------------------------------//
+
   async findOrCreateConnection(user: UserEntity): Promise<number> {
     const findLastGameForCurrentUser = await this.gRepository.find({
       where: { status: GameStatuses.Active },
@@ -121,24 +125,6 @@ export class QuizRepositoryTO {
     return findedGame;
   }
 
-  async findGamesByUser(user: UserEntity) {
-    const findedGames = await this.gRepository.find({
-      where: [
-        { firstPlayerProgress: { userId: user.id } },
-        { secondPlayerProgress: { userId: user.id } },
-      ],
-      relations: [
-        'firstPlayerProgress.user',
-        'secondPlayerProgress.user',
-      ],
-    });
-    if (!findedGames.length) {
-      throw new NotFoundException('No games found');
-    }
-
-    return findedGames;
-  }
-
   async sendAnswer(answer: string, user: UserEntity) {
     let player: PlayerProgressEntity;
     let findedGame: GamePairEntity;
@@ -223,6 +209,21 @@ export class QuizRepositoryTO {
       return saveScores.firstPlayerProgress.answers[saveAnswer.firstPlayerProgress.answers.length - 1].id;
     } else return saveScores.secondPlayerProgress.answers[saveAnswer.secondPlayerProgress.answers.length - 1].id;
   }
+
+  //------------------------------------------------------------------------------------------//
+  //-------------------------------------STATISTIC--------------------------------------------//
+  //------------------------------------------------------------------------------------------//
+
+  async findStatistic(user: UserEntity) {
+    const findedStatistic = await this.userScoreRepository.findOne({
+      where: { userId: user.id }
+    })
+    if (!findedStatistic) {
+      throw new NotFoundException(`Stat with userId ${user.id} not found`);
+    }
+    return findedStatistic;
+  }
+
 
   //------------------------------------------------------------------------------------------//
   //-------------------------------------Questions--------------------------------------------//

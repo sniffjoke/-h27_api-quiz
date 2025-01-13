@@ -12,6 +12,7 @@ import { AnswerEntity } from '../domain/answer.entity';
 import { AnswerViewModel, AnswerViewModelForPairs } from '../api/models/output/answer.view.model';
 import { MyStatisticViewModel } from '../api/models/output/my-statistic.view.model';
 import { AllStatisticViewModel } from '../api/models/output/all-statistic.view.model';
+import { UserScoreEntity } from '../domain/user-score.entity';
 
 
 @Injectable()
@@ -21,6 +22,7 @@ export class QuizQueryRepositoryTO {
     @InjectRepository(GamePairEntity) private readonly gRepository: Repository<GamePairEntity>,
     @InjectRepository(QuestionEntity) private readonly questionRepository: Repository<QuestionEntity>,
     @InjectRepository(AnswerEntity) private readonly answerRepository: Repository<AnswerEntity>,
+    @InjectRepository(UserScoreEntity) private readonly userScoreRepository: Repository<UserScoreEntity>,
   ) {
   }
 
@@ -264,13 +266,18 @@ export class QuizQueryRepositoryTO {
     };
   }
 
-  async getAllStatistic(query: any, users: any) {
-    const allStatisticArray = await Promise.all(users.map(user => this.getMyStatistics(user)))
-    const allStatisticOutput = allStatisticArray.map(info => this.allStatisticOutputMap(info))
+  async getAllStatistic(query: any): Promise<AllStatisticViewModel[]> {
+    const getAllStatistics = await this.userScoreRepository.find({
+      relations: ['user']
+    });
+    const allStatisticOutput = getAllStatistics.map(info => this.allStatisticOutputMap(info))
     return allStatisticOutput
+    // const allStatisticArray = await Promise.all(users.map(user => this.getMyStatistics(user)))
+    // const allStatisticOutput = allStatisticArray.map(info => this.allStatisticOutputMap(info))
+    // return allStatisticOutput
   }
 
-  allStatisticOutputMap(statisticInfo: any): AllStatisticViewModel {
+  allStatisticOutputMap(statisticInfo: UserScoreEntity): AllStatisticViewModel {
     const {
       sumScore,
       avgScores,
@@ -278,8 +285,7 @@ export class QuizQueryRepositoryTO {
       winsCount,
       lossesCount,
       drawsCount,
-      userId,
-      userLogin,
+      user
     } = statisticInfo;
     return {
       sumScore,
@@ -289,8 +295,8 @@ export class QuizQueryRepositoryTO {
       lossesCount,
       drawsCount,
       player: {
-        id: userId,
-        login: userLogin
+        id: user.id,
+        login: user.login
       }
     };
   }

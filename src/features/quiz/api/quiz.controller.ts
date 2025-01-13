@@ -7,6 +7,11 @@ import { JwtAuthGuard } from '../../../core/guards/jwt-auth.guard';
 import { QuizQueryRepositoryTO } from '../infrastructure/quiz.query-repository.to';
 import { UsersService } from '../../users/application/users.service';
 import { UsersRepositoryTO } from '../../users/infrastructure/users.repository.to';
+import { InjectRepository } from '@nestjs/typeorm';
+import { GamePairEntity } from '../domain/game-pair.entity';
+import { Repository } from 'typeorm';
+import { GenerateStatisticHandler } from '../domain/generate-statistic.handler';
+import { UserScoreEntity } from '../domain/user-score.entity';
 
 @Controller('pair-game-quiz')
 export class QuizController {
@@ -14,7 +19,8 @@ export class QuizController {
     private readonly quizService: QuizService,
     private readonly quizQueryRepository: QuizQueryRepositoryTO,
     private readonly usersService: UsersService,
-    private readonly usersRepository: UsersRepositoryTO,
+    // private readonly usersRepository: UsersRepositoryTO,
+    private readonly genStatHandler: GenerateStatisticHandler,
   ) {
   }
 
@@ -66,16 +72,19 @@ export class QuizController {
   @Get('users/my-statistic')
   @UseGuards(JwtAuthGuard)
   async getMyStatistic(@Req() req: Request) {
-    const user = await this.usersService.getUserByAuthToken(req.headers.authorization as string);
-    const games = await this.quizQueryRepository.getMyStatistics(user);
-    return games;
+    // const user = await this.usersService.getUserByAuthToken(req.headers.authorization as string);
+    // const myStatistic = await this.genStatHandler.generateStatisticForUser(user)
+    const myStatistic = await this.quizService.findOneStat(req.headers.authorization as string)
+    const myStatisticOutput = this.quizQueryRepository.myStatisticOutputMap(myStatistic)
+    return myStatisticOutput
+    // const games = await this.quizQueryRepository.getMyStatistics(user);
+    // return games;
   }
 
   @Get('users/top')
-  @UseGuards(JwtAuthGuard)
   async getAllStatistic(@Query() query: any) {
-    const users = await this.usersRepository.getAllUsers();
-    const games = await this.quizQueryRepository.getAllStatistic(query, users);
+    // const users = await this.usersRepository.getAllUsers();
+    const games = await this.quizQueryRepository.getAllStatistic(query);
     return games;
   }
 
