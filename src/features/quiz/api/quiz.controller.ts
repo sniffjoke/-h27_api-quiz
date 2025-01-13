@@ -6,7 +6,6 @@ import { CreateAnswerInputModel } from './models/input/create-answer.input.model
 import { JwtAuthGuard } from '../../../core/guards/jwt-auth.guard';
 import { QuizQueryRepositoryTO } from '../infrastructure/quiz.query-repository.to';
 import { UsersService } from '../../users/application/users.service';
-import { GenerateStatisticHandler } from '../domain/generate-statistic.handler';
 
 @Controller('pair-game-quiz')
 export class QuizController {
