@@ -275,7 +275,7 @@ export class QuizQueryRepositoryTO {
       lossesCount,
       drawsCount,
       player: {
-        id: user.id,
+        id: user.id.toString(),
         login: user.login
       }
     };
