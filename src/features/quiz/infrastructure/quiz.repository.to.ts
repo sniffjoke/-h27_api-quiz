@@ -198,7 +198,6 @@ export class QuizRepositoryTO {
         const generateStatisticForSecondUser = await this.genStatHandler.generateStatisticForUser(saveAnswer.secondPlayerProgress.user)
         Object.assign(firstUserScore, generateStatisticForFirstUser);
         Object.assign(secondUserScore, generateStatisticForSecondUser);
-        console.log(firstUserScore);
         await this.userScoreRepository.save(firstUserScore)
         await this.userScoreRepository.save(secondUserScore)
       }
