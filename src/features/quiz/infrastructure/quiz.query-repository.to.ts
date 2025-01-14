@@ -247,7 +247,7 @@ export class QuizQueryRepositoryTO {
       pageSize,
       pagesCount,
       page: query.pageNumber ? Number(query.pageNumber) : 1,
-      sort: query.sort ? query.sort : [ 'avgScores desc', 'sumScore desc' ],
+      sort: query.sort ? Array.isArray(query.sort) ? query.sort : [query.sort] : [ 'avgScores desc', 'sumScore desc' ],
       // sortDirection: query.sortDirection ? query.sortDirection : 'desc',
     };
   }
