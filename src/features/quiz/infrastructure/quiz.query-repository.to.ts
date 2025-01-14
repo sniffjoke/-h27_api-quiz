@@ -215,15 +215,10 @@ export class QuizQueryRepositoryTO {
 
   async getAllStatistic(query: any): Promise<PaginationBaseModel<UserScoreEntity>> {
     const generateQuery = await this.generateQueryForAllStats(query);
-    // console.log(generateQuery.sort);
     const sortOptions = generateQuery.sort.map((item) => {
       const [key, value] = item.split(' ')
       return {sortKey: key, sortValue: value.toUpperCase()}
     });
-    // const getAllStatistics = await this.userScoreRepository.find({
-    //   relations: ['user']
-    // });
-    // console.log(sortOptions);
     const allStatisticsBuilder = this.userScoreRepository
       .createQueryBuilder('score')
       .innerJoinAndSelect('score.user', 'user')
