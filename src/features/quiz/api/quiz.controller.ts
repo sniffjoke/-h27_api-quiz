@@ -74,5 +74,4 @@ export class QuizController {
     const statsArray = await this.quizQueryRepository.getAllStatistic(query);
     return statsArray;
   }
-
 }
