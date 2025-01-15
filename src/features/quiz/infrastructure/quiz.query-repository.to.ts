@@ -227,7 +227,7 @@ export class QuizQueryRepositoryTO {
       return allStatisticsBuilder.addOrderBy(`"${item.sortKey}"`, item.sortValue)
     });
     const getAllStatistics = await allStatisticsBuilder
-      .skip((generateQuery.page - 1) * generateQuery.pageSize)
+      .offset((generateQuery.page - 1) * generateQuery.pageSize)
       .limit(generateQuery.pageSize)
       .getMany();
     const allStatisticOutput = getAllStatistics.map(info => this.allStatisticOutputMap(info))
